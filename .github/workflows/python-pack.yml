@@ -27,7 +27,7 @@ jobs:
           pyinstaller --onefile player.py
 
       - name: Upload EXE
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: player-exe
           path: dist/player.exe
