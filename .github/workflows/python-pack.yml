@@ -24,7 +24,7 @@ jobs:
 
       - name: Build EXE
         run: |
-          pyinstaller --onefile player.py
+          pyinstaller --onefile --noconsole player.py
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
