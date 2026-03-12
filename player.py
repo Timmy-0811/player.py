@@ -17,7 +17,7 @@ mp3s = []
 dir = "<none>"
 
 def play_random():
-    global current_song, mp3s, dir
+    global current_song, mp3s
     pygame.mixer.music.stop()
     if not dir == "<none>":
         print(f"[DEBUG] list.check '{mp3s}'")
@@ -267,4 +267,5 @@ keyboard.add_hotkey("shift+alt+up", lambda: set_volume(1))
 keyboard.add_hotkey("shift+alt+down", lambda: set_volume(-1))
 
 root.mainloop()
+
 
