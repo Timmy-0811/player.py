@@ -24,7 +24,11 @@ jobs:
 
       - name: Build EXE
         run: |
-          pyinstaller --onefile --noconsole player.py
+          pyinstaller --onefile --noconsole --name Player player.py
+
+      - name: Build Debug EXE
+        run: |
+          pyinstaller --onefile --name Player-Debug player.py
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
