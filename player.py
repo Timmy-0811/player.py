@@ -5,7 +5,6 @@ import os
 import keyboard
 from pathlib import Path
 import sys
-from colorama import Fore
 
 # --- Init ---
 pygame.mixer.init()
@@ -268,3 +267,4 @@ keyboard.add_hotkey("shift+alt+up", lambda: set_volume(1))
 keyboard.add_hotkey("shift+alt+down", lambda: set_volume(-1))
 
 root.mainloop()
+
