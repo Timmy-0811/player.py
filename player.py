@@ -16,6 +16,15 @@ paused = False
 mp3s = []
 dir = "<none>"
 
+if getattr(sys, "frozen", False):
+    # Wenn als EXE gepackt
+    basepath = os.path.dirname(sys.executable)
+else:
+    # Normal als Python-Script
+    basepath = os.path.dirname(os.path.abspath(__file__))
+
+print(f"[DEBUG] path.base {basepath}")
+
 def play_random():
     global current_song, mp3s
     pygame.mixer.music.stop()
@@ -24,14 +33,14 @@ def play_random():
 
         if not dir == "all":
             if not mp3s:
-                music_path = Path(f"./{dir}")
+                music_path = Path(f"{basepath}/{dir}")
                 mp3s = list(music_path.glob("*.mp3"))
                 print(f"[DEBUG] list.new '{mp3s}'")
         else:
             if not mp3s:
                 for i, ordner in enumerate(unterordner):
                     print(f"[DEBUG] list.all.scan '{ordner}'")
-                    music_path = Path(f"./{ordner}")
+                    music_path = Path(f"{basepath}/{ordner}")
                     mp3s = list(music_path.glob("*.mp3")) + mp3s
                 print(f"[DEBUG] list.all.new '{mp3s}'")
 
@@ -82,11 +91,9 @@ def pause_music():
 
 # --- hier wichtige sachen für ordner ---
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 unterordner = [
-    name for name in os.listdir(BASE_DIR)
-    if os.path.isdir(os.path.join(BASE_DIR, name))
+    name for name in os.listdir(basepath)
+    if os.path.isdir(os.path.join(basepath, name))
 ]
 
 def ordner_gewaehlt(name):
@@ -267,5 +274,3 @@ keyboard.add_hotkey("shift+alt+up", lambda: set_volume(1))
 keyboard.add_hotkey("shift+alt+down", lambda: set_volume(-1))
 
 root.mainloop()
-
-
