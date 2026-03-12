@@ -26,12 +26,18 @@ jobs:
         run: |
           pyinstaller --onefile --noconsole --name Player player.py
 
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: player
+          path: dist/player.exe
+
       - name: Build Debug EXE
         run: |
           pyinstaller --onefile --name Player-Debug player.py
 
-      - name: Upload EXE
+      - name: Upload Debug EXE
         uses: actions/upload-artifact@v4
         with:
-          name: player-exe
-          path: dist/player.exe
+          name: player-debug
+          path: dist/player-debug.exe
