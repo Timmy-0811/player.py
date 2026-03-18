@@ -9,12 +9,13 @@ import sys
 # --- Init ---
 pygame.mixer.init()
 
-volume = 0.05
+volume = 0.1
 pygame.mixer.music.set_volume(volume)
 current_song = None
 paused = False
 mp3s = []
-dir = "<none>"
+lists = []
+list_buttons = {}
 
 if getattr(sys, "frozen", False):
     # Wenn als EXE gepackt
@@ -28,27 +29,31 @@ print(f"[DEBUG] path.base {basepath}")
 def play_random():
     global current_song, mp3s
     pygame.mixer.music.stop()
-    if not dir == "<none>":
-        print(f"[DEBUG] list.check '{mp3s}'")
-
-        if not dir == "all":
-            if not mp3s:
-                music_path = Path(f"{basepath}/{dir}")
-                mp3s = list(music_path.glob("*.mp3"))
-                print(f"[DEBUG] list.new '{mp3s}'")
-        else:
-            if not mp3s:
-                for i, ordner in enumerate(unterordner):
-                    print(f"[DEBUG] list.all.scan '{ordner}'")
-                    music_path = Path(f"{basepath}/{ordner}")
-                    mp3s = list(music_path.glob("*.mp3")) + mp3s
-                print(f"[DEBUG] list.all.new '{mp3s}'")
+    if lists:
+        print(f"[DEBUG] list.empty.check '{mp3s}'")
 
         if not mp3s:
-            print(f"[WARN] list.new.no_files '{dir}'")
+            for i, ordner in enumerate(lists):
+                print(f"[DEBUG] list.scan '{ordner}'")
+                music_path = Path(f"{basepath}/{ordner}")
+                for mp3 in music_path.glob("*.mp3"):
+                    if not any(Path(path).name == Path(mp3).name for path in mp3s):
+                        mp3s.append(mp3)
+                        print(f"[DEBUG] scan.add '{mp3}'")
+                    else:
+                        print(f"[DEBUG] scan.skip '{mp3}'")
+
+                if not mp3s:
+                    print(f"[WARN] list.new.no_files '{ordner}'")
+                    label.config(text="No Files!")
+
+            print(f"[DEBUG] list.all.new '{mp3s}'")
+
+        if not mp3s:
+            print(f"[WARN] list.new.no_files '{lists}'")
             label.config(text="No Files!")
             return
-            
+
         filename = random.choice(mp3s)
         if not os.path.exists(filename):
             print(f"[WARN] play.not_found '{filename}'")
@@ -59,8 +64,8 @@ def play_random():
         current_song = filename
         mp3s.remove(filename)
         pygame.mixer.music.load(filename)
-        if len(filename.name.removesuffix(".mp3")) >= 35:
-            label.config(text=f"{filename.name.removesuffix('.mp3')[:33]}...")
+        if len(filename.name.removesuffix(".mp3")) >= 30:
+            label.config(text=f"{filename.name.removesuffix('.mp3')[:29]}...")
         else:
             label.config(text=filename.name.removesuffix('.mp3'))
         pygame.mixer.music.play()
@@ -97,21 +102,27 @@ unterordner = [
 ]
 
 def ordner_gewaehlt(name):
-    label.config(text="Ready")
-    global dir
-    dir = name
-    ausgewaehlter_ordner.set("from " + name)
+    global lists
+    if name in lists:
+        lists.remove(name)
+        list_buttons[name].configure(bg='#020052')
+    else:
+        lists.append(name)
+        list_buttons[name].configure(bg='#020075')
+    ausgewaehlter_ordner.set("from " + str(lists).replace("[", "").replace("]", "").replace("'", ""))
     print(f"[DEBUG] list.choosen '{name}'")
     newlist()
-    if name == "<none>":
+    if lists == []:
         ausgewaehlter_ordner.set("Choose Playlist")
+        label.configure(text="Ready")
 
 def newlist():
     global mp3s
-    if not dir == "<none>":
-        print(f"[DEBUG] list.choosen.dir './{dir}'")
+    print(f"[DEBUG] list.loading '{lists}'")
     mp3s = []
-    play_random()
+    if lists == []:
+        print(f"[DEBUG] list.empty.stop")
+        play_random()
 
 list_visible = True
 
@@ -125,7 +136,10 @@ def toggle_lists():
     else:
         button_frame.pack(pady=5)
         button_more_text.set("Hide Playlists")
-        y = 220 + 21 * len(unterordner)
+        if len(unterordner) % 2 == 0:
+            y = 170 + 21 * len(unterordner)
+        else:
+            y = 191 + 21 * len(unterordner)
         root.geometry(f"300x{y}")
 
 # --- UI ---
@@ -204,45 +218,43 @@ button_frame = tk.Frame(root)
 button_frame.configure(bg='#020052')
 button_frame.pack(pady=5)
 
-tk.Button(
-        button_frame,
-        text="All",
-        width=15,
-        command=lambda name="all": ordner_gewaehlt(name),
-        bg='#020052',
-        fg="#5EC900"
-    ).grid(row=1, column=0, padx=5, pady=5)
-
-tk.Button(
-        button_frame,
-        text="None",
-        width=15,
-        command=lambda name="<none>": ordner_gewaehlt(name),
-        bg='#020052',
-        fg="#5EC900"
-    ).grid(row=1, column=1, padx=5, pady=5)
-
 for i, ordner in enumerate(unterordner):
     print(f"[DEBUG] folders.name '{ordner}'")
-    if not ordner == "all":
-        zeile = (i // 2) + 2
-        spalte = i % 2
-        tk.Button(
-            button_frame,
-            text=ordner,
-            width=15,
-            command=lambda name=ordner: ordner_gewaehlt(name),
-            bg='#020052',
-            fg="#C9AE00"
-        ).grid(row=zeile, column=spalte, padx=5, pady=5, sticky="w")
-    else:
-        print("[ERROR] folders.name.invalid")
-        print("############################")
-        print("#   Your Folder Name is invalid!    #")
-        print("#       It wont show up in GUI!        #")
-        print("#          This is not an Error!           #")
-        print("############################")
+    zeile = (i // 2) + 2
+    spalte = i % 2
+    list_buttons[ordner] = tk.Button(
+        button_frame,
+        text=ordner,
+        width=15,
+        command=lambda name=ordner: ordner_gewaehlt(name),
+        bg='#020052',
+        fg="#C9AE00"
+    )
+    list_buttons[ordner].grid(row=zeile, column=spalte, padx=5, pady=5, sticky="w")
 
+if len(unterordner) == 1:
+    tk.Button(
+        button_frame,
+        text="",
+        width=15,
+        bg='#020052',
+        fg="#C9AE00",
+        relief="flat"
+    ).grid(row=2, column=1, padx=5, pady=5, sticky="w")
+
+autoplay_exists = False
+
+for ordner in unterordner:
+    if os.path.exists(f"{basepath}/{ordner}/.autoplay.txt"):
+        print(f"[DEBUG] autoplay.on 'ordner'")
+        ordner_gewaehlt(ordner)
+        autoplay_exists = True
+    else:
+        print(f"[DEBUG] autoplay.off 'ordner'")
+
+if autoplay_exists:
+    print(f"[DEBUG] autoplay.hide.list-buttons")
+    toggle_lists()
 
 visible = True
 
