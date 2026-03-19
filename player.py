@@ -175,7 +175,7 @@ volume_min = tk.Button(volume_frame, text="-0.2", fg="#5EC900", command=lambda: 
 volume_min.configure(bg='#020052')
 volume_min.pack(side=tk.LEFT, padx=3)
 
-volume_num = tk.Label(volume_frame, text="5.0%", fg="#5EC900", font=("Arial", 10))
+volume_num = tk.Label(volume_frame, text="10.0%", fg="#5EC900", font=("Arial", 10))
 volume_num.configure(bg='#020052')
 volume_num.pack(side=tk.LEFT, padx=1)
 
