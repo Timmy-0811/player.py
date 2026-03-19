@@ -1,5 +1,8 @@
 name: Build EXE
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [ "main" ]
@@ -8,6 +11,10 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+
+    strategy:
+      matrix:
+        build: [release, debug]
 
     steps:
       - uses: actions/checkout@v4
@@ -22,26 +29,39 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller -r requirements.txt
 
-      - name: Build EXE
-        run: |
-          pyinstaller --onefile --noconsole --name Player player.py
+      - name: Build Release
+        if: matrix.build == 'release'
+        run: pyinstaller --onefile --noconsole --name Player player.py
 
-      - name: Upload EXE
+      - name: Build Debug
+        if: matrix.build == 'debug'
+        run: pyinstaller --onefile --name Player-Debug player.py
+
+      - name: Save
+        if: matrix.build == 'release'
         uses: actions/upload-artifact@v4
         with:
-          name: player
-          path: dist/player.exe
-
-      - name: Build Debug EXE
-        run: |
-          pyinstaller --onefile --name Player-Debug player.py
-
-      - name: Upload Debug EXE
+          name: build
+          path: dist/
+      - name: Save
+        if: matrix.build == 'debug'
         uses: actions/upload-artifact@v4
         with:
-          name: player-debug
-          path: dist/player-debug.exe
+          name: debug
+          path: dist/
+          
 
+  publish:
+    runs-on: windows-latest
+    needs: [build]
+    if: success()
+
+    steps:
+      - uses: actions/checkout@v4
+    
+      - name: Get Files
+        uses: actions/download-artifact@v4
+    
       - name: Create Release Draft
         uses: softprops/action-gh-release@v2
         with:
@@ -49,8 +69,8 @@ jobs:
           name: Build ${{ github.run_number }}
           draft: true
           files: |
-            dist/Player.exe
-            dist/Player-Debug.exe
+            build/Player.exe
+            debug/Player-Debug.exe
             player.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
