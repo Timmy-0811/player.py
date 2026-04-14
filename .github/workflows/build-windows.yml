@@ -4,12 +4,10 @@ permissions:
   contents: write
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
-  build:
+  build-win:
     runs-on: windows-latest
 
     strategy:
@@ -31,29 +29,71 @@ jobs:
 
       - name: Build Release
         if: matrix.build == 'release'
-        run: pyinstaller --onefile --noconsole --name Player player.py
+        run: pyinstaller --onefile --noconsole --name Windows-Player player.py
 
       - name: Build Debug
         if: matrix.build == 'debug'
-        run: pyinstaller --onefile --name Player-Debug player.py
+        run: pyinstaller --onefile --name Windows-Player-Debug player.py
 
       - name: Save
         if: matrix.build == 'release'
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: dist/
+          path: dist/win
       - name: Save
         if: matrix.build == 'debug'
         uses: actions/upload-artifact@v4
         with:
           name: debug
-          path: dist/
+          path: dist/win
+
+  build-mac:
+    runs-on: macos-latest
+
+    strategy:
+      matrix:
+        build: [release, debug]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          architecture: "x64"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller -r requirements.txt
+
+      - name: Build Release
+        if: matrix.build == 'release'
+        run: pyinstaller --onefile --windowed --target-architecture universal2 --name MacOS-Player player.py
+
+      - name: Build Debug
+        if: matrix.build == 'debug'
+        run: pyinstaller --onefile --target-architecture universal2 --name MacOS-Player-Debug player.py
+
+      - name: Save
+        if: matrix.build == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: dist/mac
+      - name: Save
+        if: matrix.build == 'debug'
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug
+          path: dist/mac
           
 
   publish:
     runs-on: windows-latest
-    needs: [build]
+    needs: [build-win, build-mac]
     if: success()
 
     steps:
@@ -69,8 +109,10 @@ jobs:
           name: Build ${{ github.run_number }}
           draft: true
           files: |
-            build/Player.exe
-            debug/Player-Debug.exe
+            win/build/Windows-Player.exe
+            win/debug/Windows-Player-Debug.exe
+            mac/build/MacOS-Player.exe
+            mac/debug/MacOS-Player-Debug.exe
             player.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
