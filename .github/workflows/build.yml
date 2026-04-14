@@ -51,6 +51,48 @@ jobs:
           name: debug-win
           path: dist
 
+  build-linux:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        build: [release, debug]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller -r requirements.txt
+
+      - name: Build Release
+        if: matrix.build == 'release'
+        run: pyinstaller --onefile --noconsole --name Linux-Player player.py
+
+      - name: Build Debug
+        if: matrix.build == 'debug'
+        run: pyinstaller --onefile --name Linux-Player-Debug player.py
+
+      - name: Save
+        if: matrix.build == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-linux
+          path: dist
+          
+      - name: Save
+        if: matrix.build == 'debug'
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-linux
+          path: dist
+
   build-mac-x64:
     runs-on: macos-latest
 
@@ -138,7 +180,7 @@ jobs:
 
   debug-zip:
     runs-on: ubuntu-latest
-    needs: [build-win, build-mac-x64, build-mac-arm]
+    needs: [build-win, build-linux, build-mac-x64, build-mac-arm]
     if: success()
     
     steps:
@@ -147,7 +189,7 @@ jobs:
 
       - name: Make Zip
         run: |
-          zip -j Debug-Pack.zip debug-win/Windows-Player-Debug.exe debug-mac-x64/Mac-x64-Player-Debug debug-mac-arm/Mac-arm-Player-Debug
+          zip -j Debug-Pack.zip debug-win/Windows-Player-Debug.exe debug-mac-x64/Mac-x64-Player-Debug debug-mac-arm/Mac-arm-Player-Debug debug-linux/Linux-Player-Debug
 
       - name: Save
         uses: actions/upload-artifact@v4
@@ -157,7 +199,7 @@ jobs:
 
   publish:
     runs-on: windows-latest
-    needs: [build-win, build-mac-x64, build-mac-arm, debug-zip]
+    needs: [build-win, build-linux, build-mac-x64, build-mac-arm, debug-zip]
     if: success() && github.event_name == 'release'
 
     steps:
@@ -171,9 +213,16 @@ jobs:
         with:
           files: |
             build-win/Windows-Player.exe
+            build-linux/Linux-Player
             build-mac-x64/Mac-x64-Player
             build-mac-arm/Mac-arm-Player
             player.py
             zip/Debug-Pack.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set Notes in Draft
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit ${{ github.event.release.tag_name }} --notes "Apple-x64 is for older systems with intel cpu (before 2020) | Debug-Pack.zip includes all Platforms!"
