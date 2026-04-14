@@ -221,9 +221,3 @@ jobs:
             zip/Debug-Pack.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set Notes in Draft
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release edit ${{ github.event.release.tag_name }} --notes "Apple-x64 is for older systems with intel cpu (before 2020) | Debug-Pack.zip includes all Platforms!"
