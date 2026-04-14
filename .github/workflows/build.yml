@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        build: [release, debug]
+        build: [debug, release]
 
     steps:
       - uses: actions/checkout@v4
@@ -41,14 +41,14 @@ jobs:
         if: matrix.build == 'release'
         uses: actions/upload-artifact@v4
         with:
-          name: build
+          name: build-win
           path: dist
           
       - name: Save
         if: matrix.build == 'debug'
         uses: actions/upload-artifact@v4
         with:
-          name: debug
+          name: debug-win
           path: dist
 
   build-mac-x64:
@@ -56,7 +56,7 @@ jobs:
 
     strategy:
       matrix:
-        build: [release, debug]
+        build: [debug, release]
 
     steps:
       - uses: actions/checkout@v4
@@ -84,14 +84,14 @@ jobs:
         if: matrix.build == 'release'
         uses: actions/upload-artifact@v4
         with:
-          name: build
+          name: build-mac-x64
           path: dist
           
       - name: Save
         if: matrix.build == 'debug'
         uses: actions/upload-artifact@v4
         with:
-          name: debug
+          name: debug-mac-x64
           path: dist
 
   build-mac-arm:
@@ -99,7 +99,7 @@ jobs:
 
     strategy:
       matrix:
-        build: [release, debug]
+        build: [debug, release]
 
     steps:
       - uses: actions/checkout@v4
@@ -126,14 +126,14 @@ jobs:
         if: matrix.build == 'release'
         uses: actions/upload-artifact@v4
         with:
-          name: build
+          name: build-mac-arm
           path: dist
           
       - name: Save
         if: matrix.build == 'debug'
         uses: actions/upload-artifact@v4
         with:
-          name: debug
+          name: debug-mac-arm
           path: dist
 
   debug-zip:
@@ -147,7 +147,7 @@ jobs:
 
       - name: Make Zip
         run: |
-          zip -j Debug-Pack.zip debug/Windows-Player-Debug.exe debug/Mac-x64-Player-Debug debug/Mac-arm-Player-Debug
+          zip -j Debug-Pack.zip debug-win/Windows-Player-Debug.exe debug-mac-x64/Mac-x64-Player-Debug debug-mac-arm/Mac-arm-Player-Debug
 
       - name: Save
         uses: actions/upload-artifact@v4
@@ -170,9 +170,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/Windows-Player.exe
-            build/Mac-x64-Player
-            build/Mac-arm-Player
+            build-win/Windows-Player.exe
+            build-mac-x64/Mac-x64-Player
+            build-mac-arm/Mac-arm-Player
             player.py
             zip/Debug-Pack.zip
         env:
