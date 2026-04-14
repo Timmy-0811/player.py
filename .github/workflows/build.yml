@@ -189,13 +189,13 @@ jobs:
 
       - name: Make Zip
         run: |
-          zip -j Debug-Pack.zip debug-win/Windows-Player-Debug.exe debug-mac-x64/Mac-x64-Player-Debug debug-mac-arm/Mac-arm-Player-Debug debug-linux/Linux-Player-Debug
+          zip -j compressed/Debug-Pack.zip debug-win/Windows-Player-Debug.exe debug-mac-x64/Mac-x64-Player-Debug debug-mac-arm/Mac-arm-Player-Debug debug-linux/Linux-Player-Debug
 
       - name: Save
         uses: actions/upload-artifact@v4
         with:
           name: zip
-          path: dist
+          path: compressed
 
   publish:
     runs-on: windows-latest
