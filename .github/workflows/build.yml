@@ -50,7 +50,7 @@ jobs:
           name: debug
           path: dist/win
 
-  build-mac:
+  build-mac-x64:
     runs-on: macos-latest
 
     strategy:
@@ -72,24 +72,24 @@ jobs:
 
       - name: Build Release
         if: matrix.build == 'release'
-        run: arch -x86_64 pyinstaller --onefile --windowed --name Mac-Player player.py
+        run: arch -x86_64 pyinstaller --onefile --windowed --name Mac-x64-Player player.py
 
       - name: Build Debug
         if: matrix.build == 'debug'
-        run: arch -x86_64 pyinstaller --onefile --name Mac-Player-Debug player.py
+        run: arch -x86_64 pyinstaller --onefile --name Mac-x64-Player-Debug player.py
 
       - name: Save
         if: matrix.build == 'release'
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: dist/mac
+          path: dist/mac-x64
       - name: Save
         if: matrix.build == 'debug'
         uses: actions/upload-artifact@v4
         with:
           name: debug
-          path: dist/mac
+          path: dist/mac-x64
 
   build-mac-arm:
     runs-on: macos-latest
@@ -113,11 +113,11 @@ jobs:
 
       - name: Build Release
         if: matrix.build == 'release'
-        run: pyinstaller --onefile --windowed --name Mac-ARM-Player player.py
+        run: pyinstaller --onefile --windowed --name Mac-arm-Player player.py
 
       - name: Build Debug
         if: matrix.build == 'debug'
-        run: pyinstaller --onefile --name Mac-ARM-Player-Debug player.py
+        run: pyinstaller --onefile --name Mac-arm-Player-Debug player.py
 
       - name: Save
         if: matrix.build == 'release'
@@ -134,7 +134,7 @@ jobs:
 
   debug-zip:
     runs-on: ubuntu-latest
-    needs: [build-win, build-mac]
+    needs: [build-win, build-mac-x64, build-mac-arm]
     if: success()
     
     steps:
@@ -143,7 +143,7 @@ jobs:
 
       - name: Make Zip
         run: |
-          zip -j Debug-Pack.zip win/debug/Windows-Player-Debug.exe mac/debug/Mac-Player-Debug mac-arm/debug/Mac-ARM-Player-Debug
+          zip -j Debug-Pack.zip win/debug/Windows-Player-Debug.exe mac-x64/debug/Mac-x64-Player-Debug mac-arm/debug/Mac-arm-Player-Debug
 
       - name: Save
         uses: actions/upload-artifact@v4
@@ -153,7 +153,7 @@ jobs:
 
   publish:
     runs-on: windows-latest
-    needs: [build-win, build-mac, debug-zip]
+    needs: [build-win, build-mac-x64, build-mac-arm, debug-zip]
     if: success()
 
     steps:
@@ -167,8 +167,8 @@ jobs:
         with:
           files: |
             win/build/Windows-Player.exe
-            mac/build/Mac-Player
-            mac-arm/build/Mac-ARM-Player
+            mac-x64/build/Mac-x64-Player
+            mac-arm/build/Mac-arm-Player
             player.py
             zip/Debug-Pack.zip
         env:
