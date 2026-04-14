@@ -42,14 +42,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: dist/win
+          path: dist
           
       - name: Save
         if: matrix.build == 'debug'
         uses: actions/upload-artifact@v4
         with:
           name: debug
-          path: dist/win
+          path: dist
 
   build-mac-x64:
     runs-on: macos-latest
@@ -85,14 +85,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: dist/mac-x64
+          path: dist
           
       - name: Save
         if: matrix.build == 'debug'
         uses: actions/upload-artifact@v4
         with:
           name: debug
-          path: dist/mac-x64
+          path: dist
 
   build-mac-arm:
     runs-on: macos-latest
@@ -127,14 +127,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: dist/mac-arm
+          path: dist
           
       - name: Save
         if: matrix.build == 'debug'
         uses: actions/upload-artifact@v4
         with:
           name: debug
-          path: dist/mac-arm
+          path: dist
 
   debug-zip:
     runs-on: ubuntu-latest
@@ -147,7 +147,7 @@ jobs:
 
       - name: Make Zip
         run: |
-          zip -j Debug-Pack.zip win/debug/Windows-Player-Debug.exe mac-x64/debug/Mac-x64-Player-Debug mac-arm/debug/Mac-arm-Player-Debug
+          zip -j Debug-Pack.zip debug/Windows-Player-Debug.exe debug/Mac-x64-Player-Debug debug/Mac-arm-Player-Debug
 
       - name: Save
         uses: actions/upload-artifact@v4
@@ -170,9 +170,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            win/build/Windows-Player.exe
-            mac-x64/build/Mac-x64-Player
-            mac-arm/build/Mac-arm-Player
+            build/Windows-Player.exe
+            build/Mac-x64-Player
+            build/Mac-arm-Player
             player.py
             zip/Debug-Pack.zip
         env:
