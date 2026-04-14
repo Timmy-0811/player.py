@@ -158,7 +158,7 @@ jobs:
   publish:
     runs-on: windows-latest
     needs: [build-win, build-mac-x64, build-mac-arm, debug-zip]
-    if: success()
+    if: success() && github.event_name == 'release'
 
     steps:
       - uses: actions/checkout@v4
