@@ -51,7 +51,7 @@ jobs:
           path: dist/win
 
   build-mac:
-    runs-on: macos-13
+    runs-on: macos-latest
 
     strategy:
       matrix:
@@ -72,11 +72,11 @@ jobs:
 
       - name: Build Release
         if: matrix.build == 'release'
-        run: pyinstaller --onefile --windowed --name Mac-Player player.py
+        run: arch -x86_64 pyinstaller --onefile --windowed --name Mac-Player player.py
 
       - name: Build Debug
         if: matrix.build == 'debug'
-        run: pyinstaller --onefile --name Mac-Player-Debug player.py
+        run: arch -x86_64 pyinstaller --onefile --name Mac-Player-Debug player.py
 
       - name: Save
         if: matrix.build == 'release'
@@ -92,7 +92,7 @@ jobs:
           path: dist/mac
 
   build-mac-arm:
-    runs-on: macos-14
+    runs-on: macos-latest
 
     strategy:
       matrix:
