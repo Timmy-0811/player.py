@@ -189,6 +189,7 @@ jobs:
 
       - name: Make Zip
         run: |
+          mkdir -p compressed
           zip -j compressed/Debug-Pack.zip debug-win/Windows-Player-Debug.exe debug-mac-x64/Mac-x64-Player-Debug debug-mac-arm/Mac-arm-Player-Debug debug-linux/Linux-Player-Debug
 
       - name: Save
